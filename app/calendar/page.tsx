@@ -14,8 +14,11 @@ import { mockMeetings } from "@/lib/mock-data";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function CalendarPage() {
+  const router = useRouter();
+  
   // Group meetings by date
   const meetingsByDate = mockMeetings.reduce((acc, meeting) => {
     const date = meeting.date;
@@ -79,7 +82,11 @@ export default function CalendarPage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {meetingsByDate[date].map(meeting => (
-                <Card key={meeting.id} className="p-4 border-[#64b5f6]/30 bg-background/50 shadow-xs hover:bg-[#64b5f6]/10 hover:border-[#64b5f6]/50 smooth-hover cursor-pointer">
+                <Card 
+                  key={meeting.id} 
+                  className="p-4 border-[#64b5f6]/30 bg-background/50 shadow-xs hover:bg-[#64b5f6]/10 hover:border-[#64b5f6]/50 smooth-hover cursor-pointer"
+                  onClick={() => router.push(`/meetings/${meeting.id}`)}
+                >
                   <div className="space-y-3">
                     <div className="flex justify-between items-start">
                       <h3 className="font-semibold flex-1 text-[#e3f2fd]">{meeting.title}</h3>
@@ -95,7 +102,7 @@ export default function CalendarPage() {
                         {meeting.participants.length} người tham dự
                       </div>
                     </div>
-                    <div className="flex gap-2 pt-2 border-t">
+                    <div className="flex gap-2 pt-2 border-t" onClick={(e) => e.stopPropagation()}>
                       {meeting.status === 'in-progress' && (
                         <Button asChild variant="default" size="sm" className="flex-1">
                           <Link href={`/meetings/${meeting.id}/live`}>

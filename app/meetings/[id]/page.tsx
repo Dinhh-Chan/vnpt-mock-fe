@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,11 +21,58 @@ import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import Link from "next/link";
 
-export default function MeetingDetailPage({ params }: { params: { id: string } }) {
-  const meeting = mockMeetings.find(m => m.id === params.id);
+export default function MeetingDetailPage({ params }: { params: Promise<{ id: string }> | { id: string } }) {
+  const pathname = usePathname();
+  const [meetingId, setMeetingId] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    const resolveParams = async () => {
+      try {
+        // Thử lấy từ params trước
+        let id = "";
+        if (params && typeof params === 'object' && 'then' in params) {
+          const resolved = await params;
+          id = resolved.id;
+        } else if (params && typeof params === 'object' && 'id' in params) {
+          id = (params as { id: string }).id;
+        }
+        
+        // Nếu không có từ params, lấy từ URL
+        if (!id && pathname) {
+          const pathParts = pathname.split('/');
+          id = pathParts[pathParts.length - 1];
+        }
+        
+        setMeetingId(id);
+      } catch (error) {
+        console.error('Error resolving params:', error);
+        // Fallback: lấy từ URL
+        if (pathname) {
+          const pathParts = pathname.split('/');
+          setMeetingId(pathParts[pathParts.length - 1]);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    resolveParams();
+  }, [params, pathname]);
+
+  const meeting = mockMeetings.find(m => m.id === meetingId);
+
+  if (isLoading) {
+    return <div className="container mx-auto px-4 py-8">Đang tải...</div>;
+  }
 
   if (!meeting) {
-    return <div className="container mx-auto px-4 py-8">Cuộc họp không tồn tại</div>;
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div>Cuộc họp không tồn tại</div>
+        <div className="text-sm text-muted-foreground mt-2">ID: {meetingId || 'undefined'}</div>
+        <div className="text-sm text-muted-foreground">Các ID có sẵn: {mockMeetings.map(m => m.id).join(', ')}</div>
+      </div>
+    );
   }
 
   const getStatusBadge = (status: string) => {

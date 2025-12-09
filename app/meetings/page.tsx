@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +23,7 @@ import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 
 export default function MeetingsPage() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
 
@@ -100,7 +102,11 @@ export default function MeetingsPage() {
       {/* Meetings Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredMeetings.map(meeting => (
-          <Card key={meeting.id} className="p-6 border-[#64b5f6]/30 bg-background/50 shadow-xs hover:bg-[#64b5f6]/10 hover:border-[#64b5f6]/50 smooth-hover cursor-pointer">
+          <Card 
+            key={meeting.id} 
+            className="p-6 border-[#64b5f6]/30 bg-background/50 shadow-xs hover:bg-[#64b5f6]/10 hover:border-[#64b5f6]/50 smooth-hover cursor-pointer"
+            onClick={() => router.push(`/meetings/${meeting.id}`)}
+          >
             <div className="space-y-4">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
@@ -133,7 +139,7 @@ export default function MeetingsPage() {
                 )}
               </div>
 
-              <div className="flex gap-2 pt-4 border-t">
+              <div className="flex gap-2 pt-4 border-t" onClick={(e) => e.stopPropagation()}>
                 {meeting.status === 'in-progress' && (
                   <Button asChild variant="default" className="flex-1">
                     <Link href={`/meetings/${meeting.id}/live`}>
